@@ -10,31 +10,27 @@
             appId: "..."
         };
 
-    // 2. 務必先「初始化」並定義 db 變數 (放在最外面)
+    // 2. 接著立刻「初始化」並定義 db (這是關鍵！必須放在 send 函式之前)
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database().ref("msgs"); // 這行一定要在 send() 函數的前面
+    const db = firebase.database().ref("msgs"); 
 
-    // 3. 監聽資料 (即時呈現)
+    // 3. 定義監聽功能 (即時顯示留言)
     db.on("child_added", (snapshot) => {
         const data = snapshot.val();
         const div = document.createElement("div");
         div.className = "msg";
         div.innerHTML = `<strong>${data.name}</strong>: ${data.text}`;
         document.getElementById("messages").appendChild(div);
-        const msgBox = document.getElementById("messages");
-        msgBox.scrollTop = msgBox.scrollHeight;
     });
 
-    // 4. 最後才是送出函數
+    // 4. 最後才定義 send 函式
     function send() {
-        const nameInput = document.getElementById("name");
-        const contentInput = document.getElementById("content");
-        const name = nameInput.value || "匿名";
-        const text = contentInput.value;
+        const name = document.getElementById("name").value || "匿名";
+        const text = document.getElementById("content").value;
         if (text) {
-            // 這裡就會抓到上面定義好的 db
-            db.push({ name: name, text: text }); 
-            contentInput.value = ""; 
+            // 此時 send 就能抓到上面已經定義好的 db 了
+            db.push({ name: name, text: text });
+            document.getElementById("content").value = ""; 
         }
     }
 </script>
