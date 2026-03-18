@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>即時留言板</title>
+    <script src="https://www.gstatic.com"></script>
+    <script src="https://www.gstatic.com"></script>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 20px auto; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+        .msg { background: #f1f1f1; padding: 5px 10px; border-radius: 5px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h2>即時留言板</h2>
+    <div id="messages"></div>
+    <input type="text" id="name" placeholder="名字" style="width: 20%">
+    <input type="text" id="content" placeholder="輸入留言..." style="width: 60%">
+    <button onclick="send()">送出</button>
+
+    <script>
+        // 1. 這裡替換成你在 Firebase 專案設定中取得的 SDK 設定
+        const firebaseConfig = {
+            databaseURL: "你的資料庫網址.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref("msgs");
+
+        // 2. 監聽資料庫：有人留言時，畫面會「即時」跳出新訊息
+        db.on("child_added", (snapshot) => {
+            const data = snapshot.val();
+            const div = document.createElement("div");
+            div.className = "msg";
+            div.innerText = `${data.name}: ${data.text}`;
+            document.getElementById("messages").appendChild(div);
+            // 自動捲動到底部
+            const msgBox = document.getElementById("messages");
+            msgBox.scrollTop = msgBox.scrollHeight;
+        });
+
+        // 3. 送出留言功能
+        function send() {
+            const name = document.getElementById("name").value || "匿名";
+            const text = document.getElementById("content").value;
+            if (text) {
+                db.push({ name: name, text: text });
+                document.getElementById("content").value = ""; // 清空輸入框
+            }
+        }
+    </script>
+</body>
+</html>
