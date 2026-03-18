@@ -1,31 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>即時留言板</title>
-    <!-- 1. 修正載入點 -->
-    <script src="https://www.gstatic.com"></script>
-    <script src="https://www.gstatic.com"></script>
-    <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; }
-        #messages { border: 1px solid #ccc; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; background: #fff; }
-        .msg { background: #e3f2fd; padding: 8px 12px; border-radius: 15px; margin-bottom: 8px; word-wrap: break-word; }
-        input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-    </style>
-</head>
-<body>
-    <h2>💬 即時留言板</h2>
-    <div id="messages"></div>
-    <div style="display: flex; gap: 5px;">
-        <input type="text" id="name" placeholder="名字" style="width: 25%">
-        <input type="text" id="content" placeholder="輸入留言..." style="width: 55%">
-        <button onclick="send()">送出</button>
-    </div>
-
-    <script>
-        // 2. 這裡務必替換成你在 Firebase Console 取得的完整金鑰
+<script>
+    // 1. 先填寫配置
         const firebaseConfig = {
             apiKey: "AIzaSyATYhMbLZLIVJNeXf_RTjBLaIir-7BYgT4",
             authDomain: "guestbook-ee87a.firebaseapp.com",
@@ -35,32 +9,32 @@
             messagingSenderId: "...",
             appId: "..."
         };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database().ref("msgs");
 
-        // 監聽並顯示訊息
-        db.on("child_added", (snapshot) => {
-            const data = snapshot.val();
-            const div = document.createElement("div");
-            div.className = "msg";
-            div.innerHTML = `<strong>${data.name}</strong>: ${data.text}`;
-            document.getElementById("messages").appendChild(div);
-            const msgBox = document.getElementById("messages");
-            msgBox.scrollTop = msgBox.scrollHeight;
-        });
+    // 2. 務必先「初始化」並定義 db 變數 (放在最外面)
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("msgs"); // 這行一定要在 send() 函數的前面
 
-        // 送出功能
-        function send() {
-            const nameInput = document.getElementById("name");
-            const contentInput = document.getElementById("content");
-            const name = nameInput.value || "匿名";
-            const text = contentInput.value;
-            if (text) {
-                db.push({ name: name, text: text });
-                contentInput.value = ""; 
-            }
+    // 3. 監聽資料 (即時呈現)
+    db.on("child_added", (snapshot) => {
+        const data = snapshot.val();
+        const div = document.createElement("div");
+        div.className = "msg";
+        div.innerHTML = `<strong>${data.name}</strong>: ${data.text}`;
+        document.getElementById("messages").appendChild(div);
+        const msgBox = document.getElementById("messages");
+        msgBox.scrollTop = msgBox.scrollHeight;
+    });
+
+    // 4. 最後才是送出函數
+    function send() {
+        const nameInput = document.getElementById("name");
+        const contentInput = document.getElementById("content");
+        const name = nameInput.value || "匿名";
+        const text = contentInput.value;
+        if (text) {
+            // 這裡就會抓到上面定義好的 db
+            db.push({ name: name, text: text }); 
+            contentInput.value = ""; 
         }
-    </script>
-</body>
-</html>
+    }
+</script>
